@@ -69,7 +69,7 @@ A standalone HTML/CSS/JS demo (`frontend/dossier-credit.html`) that calls the AP
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/<your-username>/credit-risk-ai.git
+git clone https://github.com/BBD-95/credit-risk-ai.git
 cd credit-risk-ai
 
 # 2. Create and activate a virtual environment
