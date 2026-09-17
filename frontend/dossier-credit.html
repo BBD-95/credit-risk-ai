@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dossier de crédit — Évaluation en direct</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14202B;
+    --ink-soft:#4A5A66;
+    --paper:#F1EEE3;
+    --panel:#FFFFFF;
+    --rule:#D8D2C0;
+    --gold:#B8873F;
+    --gold-soft:#F1E6D3;
+    --green:#2F6F53;
+    --green-soft:#E3EEE8;
+    --red:#9C3B3B;
+    --red-soft:#F4E5E2;
+    --font-display:'Source Serif 4', Georgia, serif;
+    --font-body:'IBM Plex Sans', 'Segoe UI', sans-serif;
+    --font-mono:'IBM Plex Mono', 'Consolas', monospace;
+  }
+
+  html[lang="ar"]{
+    --font-display:'Cairo', 'Segoe UI', sans-serif;
+    --font-body:'Cairo', 'Segoe UI', sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{ color:inherit; }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:28px 32px 80px;
+  }
+
+  .lang-switch{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-bottom:20px;
+  }
+
+  button.lang-btn{
+    font-family:var(--font-body);
+    font-size:0.82rem;
+    background:transparent;
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+    padding:6px 13px;
+    border-radius:2px;
+    cursor:pointer;
+    transition:background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  button.lang-btn:hover{ border-color:var(--ink); color:var(--ink); }
+  button.lang-btn.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  button.lang-btn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+
+  header.masthead{
+    border-bottom:2px solid var(--ink);
+    padding-bottom:28px;
+    margin-bottom:36px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:24px;
+    flex-wrap:wrap;
+  }
+
+  header.masthead h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(2rem, 4vw, 2.9rem);
+    margin:0 0 8px;
+    letter-spacing:-0.01em;
+  }
+
+  header.masthead p{
+    margin:0;
+    max-width:48ch;
+    color:var(--ink-soft);
+    font-size:0.98rem;
+  }
+
+  .ref{
+    font-family:var(--font-mono);
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    text-align:end;
+    white-space:nowrap;
+  }
+  html[lang="ar"] .ref{ font-family:var(--font-body); }
+
+  .demo-bar{
+    background:var(--panel);
+    border:1px solid var(--rule);
+    border-radius:2px;
+    padding:18px 22px;
+    margin-bottom:36px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+
+  .demo-bar span.label{
+    font-size:0.9rem;
+    color:var(--ink-soft);
+  }
+
+  .demo-bar .buttons{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  button.chip{
+    font-family:var(--font-body);
+    font-size:0.86rem;
+    background:transparent;
+    border:1px solid var(--ink);
+    color:var(--ink);
+    padding:7px 14px;
+    border-radius:2px;
+    cursor:pointer;
+    transition:background 0.15s ease, color 0.15s ease;
+  }
+  button.chip:hover{ background:var(--ink); color:var(--paper); }
+  button.chip:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+
+  .layout{
+    display:grid;
+    grid-template-columns:1.55fr 1fr;
+    gap:40px;
+    align-items:start;
+  }
+
+  @media (max-width:860px){
+    .layout{ grid-template-columns:1fr; }
+    .verdict{ position:static !important; }
+  }
+
+  .section{
+    border-top:1px solid var(--rule);
+    padding-top:20px;
+    margin-bottom:30px;
+  }
+
+  .section h2{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:1.15rem;
+    margin:0 0 18px;
+  }
+
+  .grid-fields{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:20px 24px;
+  }
+
+  @media (max-width:560px){
+    .grid-fields{ grid-template-columns:1fr; }
+  }
+
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+
+  .field label{
+    font-size:0.82rem;
+    color:var(--ink-soft);
+  }
+
+  .field select,
+  .field input{
+    font-family:var(--font-body);
+    font-size:0.95rem;
+    color:var(--ink);
+    background:transparent;
+    border:none;
+    border-bottom:1px solid var(--rule);
+    padding:6px 2px 8px;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+
+  .field select:focus,
+  .field input:focus{
+    outline:none;
+    border-bottom:2px solid var(--gold);
+  }
+
+  form .submit-row{
+    margin-top:12px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+
+  button.evaluate{
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:1rem;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    padding:14px 28px;
+    border-radius:2px;
+    cursor:pointer;
+    transition:transform 0.1s ease;
+  }
+  button.evaluate:hover{ transform:translateY(-1px); }
+  button.evaluate:active{ transform:translateY(0); }
+  button.evaluate:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
+  button.evaluate:disabled{ opacity:0.5; cursor:default; transform:none; }
+
+  .submit-note{
+    font-size:0.82rem;
+    color:var(--ink-soft);
+  }
+
+  /* Verdict panel */
+  .verdict{
+    position:sticky;
+    top:28px;
+    background:var(--panel);
+    border:1px solid var(--rule);
+    border-radius:2px;
+    padding:32px 28px;
+    min-height:420px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+  }
+
+  .verdict h2{
+    font-family:var(--font-display);
+    font-size:1.05rem;
+    font-weight:600;
+    align-self:flex-start;
+    margin:0 0 24px;
+  }
+
+  .stamp-zone{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:22px;
+    width:100%;
+  }
+
+  .stamp-empty{
+    width:132px;
+    height:132px;
+    border:2px dashed var(--rule);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--ink-soft);
+    font-size:0.82rem;
+    padding:12px;
+  }
+
+  .stamp{
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    border:3px solid currentColor;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:1.1rem;
+    letter-spacing:0.02em;
+    transform:rotate(-7deg);
+    opacity:0;
+    transition:opacity 0.35s ease, transform 0.35s ease;
+    padding:10px;
+    text-align:center;
+  }
+  .stamp.show{ opacity:1; transform:rotate(-7deg) scale(1); }
+  .stamp.approved{ color:var(--green); }
+  .stamp.declined{ color:var(--red); }
+
+  .prob-block{ width:100%; }
+
+  .prob-row{
+    display:flex;
+    justify-content:space-between;
+    font-family:var(--font-mono);
+    font-size:0.8rem;
+    margin-bottom:5px;
+    color:var(--ink-soft);
+  }
+  html[lang="ar"] .prob-row{ font-family:var(--font-body); }
+
+  .prob-track{
+    width:100%;
+    height:10px;
+    background:var(--rule);
+    border-radius:6px;
+    overflow:hidden;
+    display:flex;
+  }
+
+  .prob-fill-good{ background:var(--green); height:100%; width:0%; transition:width 0.5s ease; }
+  .prob-fill-bad{ background:var(--red); height:100%; width:0%; transition:width 0.5s ease; }
+
+  .verdict-note{
+    font-size:0.85rem;
+    color:var(--ink-soft);
+    margin-top:18px;
+    line-height:1.6;
+  }
+
+  .error-note{
+    font-size:0.85rem;
+    color:var(--red);
+    background:var(--red-soft);
+    padding:10px 14px;
+    border-radius:2px;
+    margin-top:16px;
+    display:none;
+  }
+
+  html[dir="rtl"] .stamp{ transform:rotate(7deg); }
+  html[dir="rtl"] .stamp.show{ transform:rotate(7deg) scale(1); }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="lang-switch">
+    <button type="button" class="lang-btn" data-lang="fr">Français</button>
+    <button type="button" class="lang-btn" data-lang="en">English</button>
+    <button type="button" class="lang-btn" data-lang="ar">العربية</button>
+  </div>
+
+  <header class="masthead">
+    <div>
+      <h1 data-i18n="title">Dossier de crédit</h1>
+      <p data-i18n="subtitle">Outil de démonstration : renseignez un dossier de prêt et obtenez en direct l'estimation du modèle, entraîné sur 1 000 dossiers historiques.</p>
+    </div>
+    <div class="ref" data-i18n="refLine">Modèle : Random Forest<br>Précision test : 70%</div>
+  </header>
+
+  <div class="demo-bar">
+    <span class="label" data-i18n="demoLabel">Profils de démonstration :</span>
+    <div class="buttons">
+      <button type="button" class="chip" data-profile="A" data-i18n="chipA">Client fiable</button>
+      <button type="button" class="chip" data-profile="B" data-i18n="chipB">Client à risque</button>
+      <button type="button" class="chip" data-profile="C" data-i18n="chipC">Cas limite</button>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <form id="creditForm">
+
+      <div class="section">
+        <h2 data-i18n="sectionIdentity">Identité</h2>
+        <div class="grid-fields">
+          <div class="field">
+            <label for="age" data-i18n="label_age">Âge</label>
+            <input type="number" id="age" min="18" max="100" value="35" required>
+          </div>
+          <div class="field">
+            <label for="personal_status_sex" data-i18n="label_personal_status_sex">Statut personnel</label>
+            <select id="personal_status_sex"></select>
+          </div>
+          <div class="field">
+            <label for="job" data-i18n="label_job">Catégorie professionnelle</label>
+            <select id="job"></select>
+          </div>
+          <div class="field">
+            <label for="foreign_worker" data-i18n="label_foreign_worker">Travailleur étranger</label>
+            <select id="foreign_worker"></select>
+          </div>
+          <div class="field">
+            <label for="telephone" data-i18n="label_telephone">Téléphone enregistré</label>
+            <select id="telephone"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 data-i18n="sectionLife">Situation de vie</h2>
+        <div class="grid-fields">
+          <div class="field">
+            <label for="housing" data-i18n="label_housing">Logement</label>
+            <select id="housing"></select>
+          </div>
+          <div class="field">
+            <label for="present_residence" data-i18n="label_present_residence">Ancienneté à l'adresse (1 à 4)</label>
+            <input type="number" id="present_residence" min="1" max="4" value="2" required>
+          </div>
+          <div class="field">
+            <label for="property" data-i18n="label_property">Bien possédé</label>
+            <select id="property"></select>
+          </div>
+          <div class="field">
+            <label for="employment_duration" data-i18n="label_employment_duration">Ancienneté dans l'emploi</label>
+            <select id="employment_duration"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 data-i18n="sectionCredit">Le crédit demandé</h2>
+        <div class="grid-fields">
+          <div class="field">
+            <label for="purpose" data-i18n="label_purpose">Objet du prêt</label>
+            <select id="purpose"></select>
+          </div>
+          <div class="field">
+            <label for="amount" data-i18n="label_amount">Montant (DM)</label>
+            <input type="number" id="amount" min="100" value="3000" required>
+          </div>
+          <div class="field">
+            <label for="duration" data-i18n="label_duration">Durée (mois)</label>
+            <input type="number" id="duration" min="1" value="24" required>
+          </div>
+          <div class="field">
+            <label for="installment_rate" data-i18n="label_installment_rate">Taux de remboursement (1 à 4)</label>
+            <input type="number" id="installment_rate" min="1" max="4" value="2" required>
+          </div>
+          <div class="field">
+            <label for="number_credits" data-i18n="label_number_credits">Nombre de crédits en cours (1 à 4)</label>
+            <input type="number" id="number_credits" min="1" max="4" value="1" required>
+          </div>
+          <div class="field">
+            <label for="other_installment_plans" data-i18n="label_other_installment_plans">Autres plans de remboursement</label>
+            <select id="other_installment_plans"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 data-i18n="sectionHistory">Historique &amp; garanties</h2>
+        <div class="grid-fields">
+          <div class="field">
+            <label for="status" data-i18n="label_status">Statut du compte courant</label>
+            <select id="status"></select>
+          </div>
+          <div class="field">
+            <label for="credit_history" data-i18n="label_credit_history">Historique de crédit</label>
+            <select id="credit_history"></select>
+          </div>
+          <div class="field">
+            <label for="savings" data-i18n="label_savings">Épargne</label>
+            <select id="savings"></select>
+          </div>
+          <div class="field">
+            <label for="other_debtors" data-i18n="label_other_debtors">Garant / co-emprunteur</label>
+            <select id="other_debtors"></select>
+          </div>
+          <div class="field">
+            <label for="people_liable" data-i18n="label_people_liable">Personnes à charge (1 ou 2)</label>
+            <input type="number" id="people_liable" min="1" max="2" value="1" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <button type="submit" class="evaluate" id="submitBtn" data-i18n="submitButton">Évaluer le dossier</button>
+        <span class="submit-note" data-i18n="submitNote">Nécessite l'API en cours d'exécution (uvicorn main:app --reload)</span>
+      </div>
+
+    </form>
+
+    <aside class="verdict">
+      <h2 data-i18n="verdictTitle">Verdict du modèle</h2>
+      <div class="stamp-zone" id="stampZone">
+        <div class="stamp-empty" id="emptyState" data-i18n="emptyState">En attente d'un dossier</div>
+      </div>
+      <div class="error-note" id="errorNote" data-i18n="errorNote">Impossible de contacter l'API. Vérifiez qu'elle tourne sur 127.0.0.1:8000.</div>
+    </aside>
+
+  </div>
+</div>
+
+<script>
+const API_URL = 'http://127.0.0.1:8000/predict';
+let currentLang = 'fr';
+let lastResult = null;
+
+const translations = {
+  fr: {
+    docTitle: "Dossier de crédit — Évaluation en direct",
+    title: "Dossier de crédit",
+    subtitle: "Outil de démonstration : renseignez un dossier de prêt et obtenez en direct l'estimation du modèle, entraîné sur 1 000 dossiers historiques.",
+    refLine: "Modèle : Random Forest<br>Précision test : 70%",
+    demoLabel: "Profils de démonstration :",
+    chipA: "Client fiable", chipB: "Client à risque", chipC: "Cas limite",
+    sectionIdentity: "Identité", sectionLife: "Situation de vie", sectionCredit: "Le crédit demandé", sectionHistory: "Historique &amp; garanties",
+    label_age: "Âge", label_personal_status_sex: "Statut personnel", label_job: "Catégorie professionnelle",
+    label_foreign_worker: "Travailleur étranger", label_telephone: "Téléphone enregistré", label_housing: "Logement",
+    label_present_residence: "Ancienneté à l'adresse (1 à 4)", label_property: "Bien possédé", label_employment_duration: "Ancienneté dans l'emploi",
+    label_purpose: "Objet du prêt", label_amount: "Montant (DM)", label_duration: "Durée (mois)",
+    label_installment_rate: "Taux de remboursement (1 à 4)", label_number_credits: "Nombre de crédits en cours (1 à 4)",
+    label_other_installment_plans: "Autres plans de remboursement", label_status: "Statut du compte courant",
+    label_credit_history: "Historique de crédit", label_savings: "Épargne", label_other_debtors: "Garant / co-emprunteur",
+    label_people_liable: "Personnes à charge (1 ou 2)",
+    submitButton: "Évaluer le dossier", evaluating: "Évaluation en cours…",
+    submitNote: "Nécessite l'API en cours d'exécution (uvicorn main:app --reload)",
+    verdictTitle: "Verdict du modèle", emptyState: "En attente d'un dossier",
+    errorNote: "Impossible de contacter l'API. Vérifiez qu'elle tourne sur 127.0.0.1:8000.",
+    approved: "APPROUVÉ", declined: "REFUSÉ", goodPayer: "Bon payeur", badPayer: "Mauvais payeur",
+    verdictNote: "Le modèle estime à {pct}% de confiance ce verdict, à partir de l'âge, du montant, de la durée et de l'historique du dossier."
+  },
+  en: {
+    docTitle: "Credit Dossier — Live Evaluation",
+    title: "Credit Dossier",
+    subtitle: "Demo tool: fill in a loan application and get the model's live estimate, trained on 1,000 historical cases.",
+    refLine: "Model: Random Forest<br>Test accuracy: 70%",
+    demoLabel: "Demo profiles:",
+    chipA: "Reliable client", chipB: "At-risk client", chipC: "Borderline case",
+    sectionIdentity: "Identity", sectionLife: "Living situation", sectionCredit: "Requested credit", sectionHistory: "History &amp; guarantees",
+    label_age: "Age", label_personal_status_sex: "Personal status", label_job: "Job category",
+    label_foreign_worker: "Foreign worker", label_telephone: "Registered phone", label_housing: "Housing",
+    label_present_residence: "Time at address (1 to 4)", label_property: "Property owned", label_employment_duration: "Employment duration",
+    label_purpose: "Loan purpose", label_amount: "Amount (DM)", label_duration: "Duration (months)",
+    label_installment_rate: "Installment rate (1 to 4)", label_number_credits: "Existing credits (1 to 4)",
+    label_other_installment_plans: "Other installment plans", label_status: "Checking account status",
+    label_credit_history: "Credit history", label_savings: "Savings", label_other_debtors: "Guarantor / co-applicant",
+    label_people_liable: "Dependents (1 or 2)",
+    submitButton: "Evaluate the file", evaluating: "Evaluating…",
+    submitNote: "Requires the API to be running (uvicorn main:app --reload)",
+    verdictTitle: "Model verdict", emptyState: "Waiting for a file",
+    errorNote: "Unable to reach the API. Make sure it's running on 127.0.0.1:8000.",
+    approved: "APPROVED", declined: "DECLINED", goodPayer: "Good payer", badPayer: "Bad payer",
+    verdictNote: "The model estimates this verdict with {pct}% confidence, based on age, amount, duration and credit history."
+  },
+  ar: {
+    docTitle: "ملف القرض — تقييم مباشر",
+    title: "ملف القرض",
+    subtitle: "أداة تجريبية: أدخل بيانات ملف قرض واحصل فوراً على تقدير النموذج، المدرَّب على 1000 حالة سابقة.",
+    refLine: "النموذج: الغابة العشوائية<br>دقة الاختبار: 70٪",
+    demoLabel: "ملفات تجريبية:",
+    chipA: "عميل موثوق", chipB: "عميل عالي المخاطر", chipC: "حالة حدّية",
+    sectionIdentity: "الهوية", sectionLife: "الوضع المعيشي", sectionCredit: "القرض المطلوب", sectionHistory: "السجل والضمانات",
+    label_age: "العمر", label_personal_status_sex: "الحالة الشخصية", label_job: "الفئة المهنية",
+    label_foreign_worker: "عامل أجنبي", label_telephone: "هاتف مسجّل", label_housing: "السكن",
+    label_present_residence: "مدة الإقامة في العنوان (1 إلى 4)", label_property: "الممتلكات", label_employment_duration: "مدة العمل الحالي",
+    label_purpose: "الغرض من القرض", label_amount: "المبلغ (مارك ألماني)", label_duration: "المدة (أشهر)",
+    label_installment_rate: "معدل السداد (1 إلى 4)", label_number_credits: "عدد القروض الحالية (1 إلى 4)",
+    label_other_installment_plans: "خطط سداد أخرى", label_status: "حالة الحساب الجاري",
+    label_credit_history: "السجل الائتماني", label_savings: "المدخرات", label_other_debtors: "الضامن / المقترض المشارك",
+    label_people_liable: "عدد المعالين (1 أو 2)",
+    submitButton: "تقييم الملف", evaluating: "جارٍ التقييم…",
+    submitNote: "يتطلب تشغيل واجهة البرمجة (uvicorn main:app --reload)",
+    verdictTitle: "قرار النموذج", emptyState: "بانتظار ملف",
+    errorNote: "تعذر الاتصال بواجهة البرمجة. تأكد من أنها تعمل على 127.0.0.1:8000.",
+    approved: "موافَق عليه", declined: "مرفوض", goodPayer: "دافع موثوق", badPayer: "دافع غير موثوق",
+    verdictNote: "يقدّر النموذج هذا القرار بثقة {pct}٪، استناداً إلى العمر والمبلغ والمدة والسجل الائتماني."
+  }
+};
+
+const fieldOptions = {
+  status: [
+    {value:"... < 100 DM", fr:"... < 100 DM", en:"... < 100 DM", ar:"أقل من 100 مارك ألماني"},
+    {value:"0 <= ... < 200 DM", fr:"0 <= ... < 200 DM", en:"0 <= ... < 200 DM", ar:"من 0 إلى أقل من 200 مارك ألماني"},
+    {value:"... >= 200 DM / salary for at least 1 year", fr:"... >= 200 DM / salaire domicilié depuis 1 an", en:"... >= 200 DM / salary assigned for 1+ year", ar:"200 مارك ألماني فأكثر / راتب محوّل منذ سنة فأكثر"},
+    {value:"no checking account", fr:"pas de compte courant", en:"no checking account", ar:"لا يوجد حساب جاري"}
+  ],
+  credit_history: [
+    {value:"no credits taken/all credits paid back duly", fr:"aucun crédit / tous remboursés normalement", en:"no credits taken / all paid back duly", ar:"لا قروض سابقة / جميعها سُدّدت بانتظام"},
+    {value:"all credits at this bank paid back duly", fr:"tous les crédits de cette banque remboursés", en:"all credits at this bank paid back duly", ar:"جميع قروض هذا البنك سُدّدت بانتظام"},
+    {value:"existing credits paid back duly till now", fr:"crédits existants remboursés normalement jusqu'ici", en:"existing credits paid back duly till now", ar:"القروض الحالية تُسدَّد بانتظام حتى الآن"},
+    {value:"delay in paying off in the past", fr:"retard de paiement par le passé", en:"delay in paying off in the past", ar:"تأخر في السداد سابقاً"},
+    {value:"critical account/other credits existing", fr:"compte critique / autres crédits en cours", en:"critical account / other credits existing", ar:"حساب حرج / قروض أخرى قائمة"}
+  ],
+  purpose: [
+    {value:"car (new)", fr:"voiture (neuve)", en:"car (new)", ar:"سيارة (جديدة)"},
+    {value:"car (used)", fr:"voiture (occasion)", en:"car (used)", ar:"سيارة (مستعملة)"},
+    {value:"furniture/equipment", fr:"mobilier/équipement", en:"furniture/equipment", ar:"أثاث/معدات"},
+    {value:"radio/television", fr:"radio/télévision", en:"radio/television", ar:"راديو/تلفزيون"},
+    {value:"domestic appliances", fr:"électroménager", en:"domestic appliances", ar:"أجهزة منزلية"},
+    {value:"repairs", fr:"réparations", en:"repairs", ar:"إصلاحات"},
+    {value:"education", fr:"éducation", en:"education", ar:"تعليم"},
+    {value:"retraining", fr:"reconversion professionnelle", en:"retraining", ar:"إعادة تأهيل مهني"},
+    {value:"business", fr:"activité professionnelle", en:"business", ar:"أعمال تجارية"},
+    {value:"others", fr:"autre", en:"others", ar:"أخرى"}
+  ],
+  savings: [
+    {value:"... < 100 DM", fr:"... < 100 DM", en:"... < 100 DM", ar:"أقل من 100 مارك ألماني"},
+    {value:"100 <= ... < 500 DM", fr:"100 <= ... < 500 DM", en:"100 <= ... < 500 DM", ar:"من 100 إلى أقل من 500 مارك ألماني"},
+    {value:"500 <= ... < 1000 DM", fr:"500 <= ... < 1000 DM", en:"500 <= ... < 1000 DM", ar:"من 500 إلى أقل من 1000 مارك ألماني"},
+    {value:"... >= 1000 DM", fr:"... >= 1000 DM", en:"... >= 1000 DM", ar:"1000 مارك ألماني فأكثر"},
+    {value:"unknown/no savings account", fr:"inconnu / pas de compte épargne", en:"unknown/no savings account", ar:"غير معروف / لا يوجد حساب توفير"}
+  ],
+  employment_duration: [
+    {value:"unemployed", fr:"sans emploi", en:"unemployed", ar:"بدون عمل"},
+    {value:"... < 1 year", fr:"< 1 an", en:"< 1 year", ar:"أقل من سنة"},
+    {value:"1 <= ... < 4 years", fr:"1 à 4 ans", en:"1 to 4 years", ar:"من 1 إلى 4 سنوات"},
+    {value:"4 <= ... < 7 years", fr:"4 à 7 ans", en:"4 to 7 years", ar:"من 4 إلى 7 سنوات"},
+    {value:"... >= 7 years", fr:"7 ans ou plus", en:"7 years or more", ar:"7 سنوات فأكثر"}
+  ],
+  personal_status_sex: [
+    {value:"male : single", fr:"homme : célibataire", en:"male: single", ar:"ذكر: أعزب"},
+    {value:"male : married/widowed", fr:"homme : marié/veuf", en:"male: married/widowed", ar:"ذكر: متزوج/أرمل"},
+    {value:"male : divorced/separated", fr:"homme : divorcé/séparé", en:"male: divorced/separated", ar:"ذكر: مطلّق/منفصل"},
+    {value:"female : divorced/separated/married", fr:"femme : divorcée/séparée/mariée", en:"female: divorced/separated/married", ar:"أنثى: مطلّقة/منفصلة/متزوجة"}
+  ],
+  other_debtors: [
+    {value:"none", fr:"aucun", en:"none", ar:"لا يوجد"},
+    {value:"co-applicant", fr:"co-emprunteur", en:"co-applicant", ar:"مقترض مشارك"},
+    {value:"guarantor", fr:"garant", en:"guarantor", ar:"ضامن"}
+  ],
+  property: [
+    {value:"real estate", fr:"bien immobilier", en:"real estate", ar:"عقار"},
+    {value:"building society savings agreement/life insurance", fr:"épargne logement / assurance-vie", en:"building society savings / life insurance", ar:"ادخار عقاري / تأمين على الحياة"},
+    {value:"car or other", fr:"voiture ou autre", en:"car or other", ar:"سيارة أو غير ذلك"},
+    {value:"unknown/no property", fr:"inconnu / aucun bien", en:"unknown/no property", ar:"غير معروف / لا ممتلكات"}
+  ],
+  other_installment_plans: [
+    {value:"none", fr:"aucun", en:"none", ar:"لا يوجد"},
+    {value:"bank", fr:"banque", en:"bank", ar:"بنك"},
+    {value:"stores", fr:"magasins", en:"stores", ar:"متاجر"}
+  ],
+  housing: [
+    {value:"own", fr:"propriétaire", en:"own", ar:"مالك"},
+    {value:"rent", fr:"locataire", en:"rent", ar:"مستأجر"},
+    {value:"for free", fr:"logé gratuitement", en:"for free", ar:"سكن مجاني"}
+  ],
+  job: [
+    {value:"unskilled - resident", fr:"non qualifié - résident", en:"unskilled - resident", ar:"غير ماهر - مقيم"},
+    {value:"skilled employee/official", fr:"employé qualifié / fonctionnaire", en:"skilled employee/official", ar:"موظف ماهر / موظف حكومي"},
+    {value:"management/self-employed/highly qualified employee/officer", fr:"cadre / indépendant / hautement qualifié", en:"management/self-employed/highly qualified", ar:"إداري / مستقل / عالي التأهيل"},
+    {value:"unemployed/unskilled - non-resident", fr:"sans emploi / non qualifié - non-résident", en:"unemployed/unskilled - non-resident", ar:"بدون عمل / غير ماهر - غير مقيم"}
+  ],
+  foreign_worker: [
+    {value:"yes", fr:"oui", en:"yes", ar:"نعم"},
+    {value:"no", fr:"non", en:"no", ar:"لا"}
+  ],
+  telephone: [
+    {value:"yes", fr:"oui", en:"yes", ar:"نعم"},
+    {value:"no", fr:"non", en:"no", ar:"لا"}
+  ]
+};
+
+const profiles = {
+  A: { status: "... < 100 DM", duration: 6, credit_history: "critical account/other credits existing", purpose: "domestic appliances", amount: 1169, savings: "unknown/no savings account", employment_duration: "... >= 7 years", installment_rate: 4, personal_status_sex: "male : single", other_debtors: "none", present_residence: 4, property: "real estate", age: 67, other_installment_plans: "none", housing: "own", number_credits: 2, job: "skilled employee/official", people_liable: 1, telephone: "yes", foreign_worker: "yes" },
+  B: { status: "0 <= ... < 200 DM", duration: 48, credit_history: "existing credits paid back duly till now", purpose: "domestic appliances", amount: 5951, savings: "... < 100 DM", employment_duration: "1 <= ... < 4 years", installment_rate: 2, personal_status_sex: "female : divorced/separated/married", other_debtors: "none", present_residence: 2, property: "real estate", age: 22, other_installment_plans: "none", housing: "own", number_credits: 1, job: "skilled employee/official", people_liable: 1, telephone: "no", foreign_worker: "yes" },
+  C: { status: "no checking account", duration: 24, credit_history: "existing credits paid back duly till now", purpose: "car (new)", amount: 3500, savings: "... < 100 DM", employment_duration: "1 <= ... < 4 years", installment_rate: 3, personal_status_sex: "male : single", other_debtors: "none", present_residence: 2, property: "car or other", age: 35, other_installment_plans: "none", housing: "own", number_credits: 1, job: "skilled employee/official", people_liable: 1, telephone: "yes", foreign_worker: "yes" }
+};
+
+function populateSelect(id) {
+  const el = document.getElementById(id);
+  if (!el || !fieldOptions[id]) return;
+  const prevValue = el.value;
+  el.innerHTML = '';
+  fieldOptions[id].forEach(opt => {
+    const o = document.createElement('option');
+    o.value = opt.value;
+    o.textContent = opt[currentLang];
+    el.appendChild(o);
+  });
+  if (prevValue && fieldOptions[id].some(o => o.value === prevValue)) {
+    el.value = prevValue;
+  }
+}
+
+function applyLanguage(lang) {
+  currentLang = lang;
+  const t = translations[lang];
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+  document.title = t.docTitle;
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+
+  Object.keys(fieldOptions).forEach(populateSelect);
+
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+
+  if (lastResult) {
+    renderVerdict(lastResult);
+  }
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyLanguage(btn.dataset.lang));
+});
+
+document.querySelectorAll('button.chip').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const data = profiles[btn.dataset.profile];
+    Object.keys(data).forEach(key => {
+      const el = document.getElementById(key);
+      if (el) el.value = data[key];
+    });
+  });
+});
+
+const form = document.getElementById('creditForm');
+const stampZone = document.getElementById('stampZone');
+const errorNote = document.getElementById('errorNote');
+const submitBtn = document.getElementById('submitBtn');
+
+const numericFields = ['duration','amount','installment_rate','present_residence','age','number_credits','people_liable'];
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errorNote.style.display = 'none';
+  submitBtn.disabled = true;
+  submitBtn.textContent = translations[currentLang].evaluating;
+
+  const payload = {};
+  form.querySelectorAll('select, input').forEach(el => {
+    payload[el.id] = numericFields.includes(el.id) ? Number(el.value) : el.value;
+  });
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) throw new Error('Invalid server response');
+    const result = await response.json();
+    lastResult = result;
+    renderVerdict(result);
+  } catch (err) {
+    errorNote.style.display = 'block';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = translations[currentLang].submitButton;
+  }
+});
+
+function renderVerdict(result) {
+  const t = translations[currentLang];
+  const approved = result.prediction === 1;
+  const goodPct = Math.round(result.probabilite_bon_payeur * 100);
+  const badPct = Math.round(result.probabilite_mauvais_payeur * 100);
+
+  stampZone.innerHTML = `
+    <div class="stamp ${approved ? 'approved' : 'declined'}" id="stampEl">
+      ${approved ? t.approved : t.declined}
+    </div>
+    <div class="prob-block">
+      <div class="prob-row"><span>${t.goodPayer}</span><span>${goodPct}%</span></div>
+      <div class="prob-track"><div class="prob-fill-good" style="width:${goodPct}%"></div></div>
+      <div class="prob-row" style="margin-top:10px;"><span>${t.badPayer}</span><span>${badPct}%</span></div>
+      <div class="prob-track"><div class="prob-fill-bad" style="width:${badPct}%"></div></div>
+    </div>
+    <p class="verdict-note">${t.verdictNote.replace('{pct}', Math.max(goodPct, badPct))}</p>
+  `;
+
+  requestAnimationFrame(() => {
+    const el = document.getElementById('stampEl');
+    if (el) el.classList.add('show');
+  });
+}
+
+applyLanguage('fr');
+</script>
+
+</body>
+</html>
