@@ -1,24 +1,34 @@
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI
-from pydantic import BaseModel
-import pandas as pd
+from pathlib import Path
+
 import joblib
+import pandas as pd
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
 
-# Charger le modèle et les colonnes une seule fois, au démarrage du serveur
-import os
+BASE_DIR = Path(__file__).resolve().parent
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-model = joblib.load(os.path.join(BASE_DIR, "models", "model.pkl"))
-columns = joblib.load(os.path.join(BASE_DIR, "models", "columns.pkl"))
+def find_file(name: str) -> Path:
+    for p in (BASE_DIR / name, BASE_DIR / "models" / name, BASE_DIR.parent / "models" / name):
+        if p.exists():
+            return p
+    raise FileNotFoundError(f"{name} introuvable")
+
+
+model = joblib.load(find_file("model.pkl"))
+columns = joblib.load(find_file("columns.pkl"))
+
 app = FastAPI(title="Credit Risk API")
 app.add_middleware(
-       CORSMiddleware,
-       allow_origins=["*"],
-       allow_methods=["*"],
-       allow_headers=["*"],
-   )
-# Définir la structure des données qu'on attend en entrée
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 class ClientData(BaseModel):
     status: str
     duration: int
@@ -41,44 +51,34 @@ class ClientData(BaseModel):
     telephone: str
     foreign_worker: str
 
-from pathlib import Path
-from fastapi.responses import FileResponse
-
-BASE_DIR = Path(__file__).resolve().parent
 
 @app.get("/", include_in_schema=False)
 def home():
     return FileResponse(BASE_DIR / "index.html")
 
+
 @app.get("/health")
 def health():
     return {"message": "API Credit Risk - en ligne !"}
 
+
 @app.post("/predict")
 def predict(client: ClientData):
-    # 1. Transformer les données reçues en DataFrame (une seule ligne)
     input_df = pd.DataFrame([client.dict()])
-
-    # 2. Appliquer le même One-Hot Encoding qu'à l'entraînement
     input_encoded = pd.get_dummies(input_df)
 
-    # 3. Ajouter les colonnes manquantes (celles vues à l'entraînement mais absentes ici)
     for col in columns:
         if col not in input_encoded.columns:
             input_encoded[col] = 0
-
-    # 4. Garder uniquement les colonnes attendues, dans le bon ordre
     input_encoded = input_encoded[columns]
 
-    # 5. Prédire
     prediction = model.predict(input_encoded)[0]
     probability = model.predict_proba(input_encoded)[0]
-
     result = "Bon payeur" if prediction == 1 else "Mauvais payeur"
 
     return {
         "prediction": int(prediction),
         "resultat": result,
         "probabilite_bon_payeur": round(float(probability[1]), 3),
-        "probabilite_mauvais_payeur": round(float(probability[0]), 3)
+        "probabilite_mauvais_payeur": round(float(probability[0]), 3),
     }
