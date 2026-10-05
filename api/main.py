@@ -41,8 +41,17 @@ class ClientData(BaseModel):
     telephone: str
     foreign_worker: str
 
-@app.get("/")
+from pathlib import Path
+from fastapi.responses import FileResponse
+
+BASE_DIR = Path(__file__).resolve().parent
+
+@app.get("/", include_in_schema=False)
 def home():
+    return FileResponse(BASE_DIR / "index.html")
+
+@app.get("/health")
+def health():
     return {"message": "API Credit Risk - en ligne !"}
 
 @app.post("/predict")
